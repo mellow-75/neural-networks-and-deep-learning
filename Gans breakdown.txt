@@ -1,0 +1,233 @@
+********IMPORTS
+
+* torch ----Torch is an open source ML library used for creating deep neural networks and is written in the Lua scripting language. It's one of the preferred platforms for deep learning research
+
+
+
+
+* torch.nn ----The module torch. nn contains different classess that help you build neural network models. All models in PyTorch inherit from the subclass nn. Module , which has useful methods like parameters() , __call__() and others.
+ 
+to train and build the layers of neural networks such as input, hidden, and output. Torch. nn base class helps wrap the torch's parameters, functions, and layers
+
+
+
+
+* torch.optim ----torch.optim is a package implementing various optimization algorithms. Most commonly used methods are already supported, and the interface is general enough, so that more sophisticated ones can also be easily integrated in the future.
+
+Optimizers generate new parameter values and evaluate them using some criterion to determine the best option
+
+
+
+
+* torchvision ----Torchvision is a library for Computer Vision that goes hand in hand with PyTorch. It has utilities for efficient Image and Video transformations, some commonly used pre-trained models, and some datasets ( torchvision does not come bundled with PyTorch , you will have to install it separately. )
+
+
+
+
+* torchvision.datasets ---- Torchvision provides many built-in datasets in the torchvision.datasets module, as well as utility classes for building your own datasets.
+
+All datasets are subclasses of torch.utils.data.Dataset i.e, they have __getitem__ and __len__ methods implemented. Hence, they can all be passed to a torch.utils.data.DataLoader which can load multiple samples in parallel using torch.multiprocessing
+
+
+
+* from torch.utils.data import DataLoader ---- PyTorch provides two data primitives: torch.utils.data.DataLoader and torch.utils.data.Dataset that allow you to use pre-loaded datasets as well as your own data. Dataset stores the samples and their corresponding labels, and DataLoader wraps an iterable around the Dataset to enable easy access to the samples.
+
+
+
+
+* torchvision.transforms ---- Transforms are common image transformations available in the torchvision.transforms module. They can be chained together using Compose . Most transform classes have a function equivalent: functional transforms give fine-grained control over the transformations.
+
+can be used to perform different types of manipulations on the image data.
+
+
+
+
+* from torch.utils.tensorboard import SummaryWriter ----The SummaryWriter class provides a high-level API to create an event file in a given directory and add summaries and events to it. The class updates the file contents asynchronously. This allows a training program to call methods to add data to the file directly from the training loop, without slowing down training.
+
+
+
+
+
+
+******	OPTIMIZERS
+
+optimizers define how neural netwroks learn, decides parameters such that loss minimizes
+-1) gradient descent- large as parameters changed only after the whole datset is seen once.
+therefore stochastic gradient descent updates after seeing every data point but is influenced by every data point and therefore can make very noisy jumps
+
+there fore mini batch gradient desscent is used,  for every n samples parameters are changed . 
+
+this is loss function for a single predictor
+
+
+
+-2)adagrad - an adaptive loss 
+it allows to alter learning rate along one direction and maybe reduce it along other, but faces problem of diminishing gradient
+
+
+-3)adadelta
+
+-4) adam
+
+
+
+so all in all major optimizers and there loss equations are
+
+
+Gradient Descent:                                           0 = 0 - α. Ve] (0)
+Stochastic Gradient Descent                           0 = 0 - α. Ve] (0; sample) 
+Mini-Batch Gradient Descent                         0 = 0 -α. Ve] (0; N samples) 
+SGD + Momentum                                           v=y.v+n. Ve](0) 
+                                                          θ = θ – αν
+
+ 
+ 
+
+SGD + Momentum + Acceleration                         v=y.v+n. Ve] (0-y.v)
+                                                          θ = θ – αν
+
+
+
+adagrad
+adadelta
+adam
+
+
+
+
+
+
+
+***** nn.Module- used as an argument in class Discriminator
+
+
+nn. Module (uppercase M) is a PyTorch specific concept, and is a class we'll be using a lot. nn. Module is not to be confused with the Python concept of a (lowercase m ) module, which is a file of Python code that can be imported.
+
+
+
+
+class Discriminator(nn.Module):             <--- nn.module is a class from which we
+                                                           are inheriting
+    def __init__(Self, in_feature):         <---- class discriminator takes one 
+                                                        argument , in_feature                          
+        super().__init__()
+        Self.disc = nn.Sequential(
+            nn.Linear(in_feature, 128),
+            nn.LeakyReLU(0.1),
+            nn.Linear(128, 1),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x):
+        return self.disc(x)
+
+
+
+
+
+****** nn.Sequential 
+
+Sequential is a construction which is used when you want to run certain layers sequentially. It makes the forward to be readable and compact. So in the code you are pointing to, they build different ResNet architectures with the same function.
+ 
+nn. Sequential allows you to stack Neural Network layers on top of each other.
+
+
+Self.disc = nn.Sequential(
+            nn.Linear(in_feature, 128),
+            nn.LeakyReLU(0.1),
+            nn.Linear(128, 1),
+            nn.Sigmoid(),
+        )
+
+
+
+nn.lineaer is the first layer which is simply the inputs and weights , then and is passed on
+
+nn.leaky relu is the second layer with slope 0.1
+it is an activation function and 
+
+
+*****activation functions are nonlinear and differentiable
+
+in relu the values its can output is either 0 or z so on taking gradient we'll get 0 or a constant function . on backpropogation this would lead to no learning as the gradient is zero for values of z less than 0. so this would cause no updation in the  values of z and therefore no learning in the neural net 
+THIS IS CALLED THE DYING NEURAON POROBLEM.
+
+to overcome this we have to make the gradient a small value such as z*0.1 when the gradient actually becomes 0
+
+so f(z)= maz(0.1*z ,z )
+new function , this is called leaky relu . so after sufficient no. of steps the network would get significatn updation of weights.
+
+saves you from vanishing gradient and computational expensiveness
+
+
+ 
+nn.linear forms the input to the next layer in the neural net
+here  we first take in_feature no. of inputs calculate the linear sum adn then pass it on to the next layer with 128 perceptrons. 
+this layer of perceptrons will take in the linear sumations with respective weights for each node and then pass it through the activation function 
+the next layer is a single node to generate the output using sigmoid 
+the sigmoid takes the linear input from the previous layer and gives the final output.
+
+
+
+*******
+    def forward(self, x):
+        return self.disc(x)
+
+
+calling the self.disc function and return the output.
+
+
+-----------------------------------------------------------------------
+
+
+************generator class
+
+
+class Generator(nn.Module):                            <---inheriting form  
+                                                               nn.Module                                 
+    def __init__(self, z_dim, img_dim):            <---- the method take z_dim and         
+                                                             img_dim as arguments  
+      super().__init__()
+        self.gen = nn.Sequential(
+            nn.Linear(z_dim, 256),
+            nn.LeakyReLU(0.1),
+            nn.Linear(256, img_dim),
+            nn.Tanh(),
+        )
+
+
+
+here the neural net , a sequential , comprises of the linear layer  with z_dim no. of inputs and 256 outputs in the first layer followed by the linear sumation of all the inputs and passing them onto the 256 nodes which then passes it to the leaky relu activattion function with slope 0.1 , these 256 outputs are then again passes onto the next layer of perceptrons with 256 nodes by doing the linear sumation using respective weights for each node. and the this will be bassed onto the img_dim no of nodes that will finally pass it through the tanh function to generate img_dim. no. of outputs.
+so whats happening is we generated output of dimension equal to the img_dim. so weve got ourself the fake generated image.
+
+
+
+
+    def forward(self, x):
+        return self.gen(x)
+
+call the self.gen and returns the output for x as input 
+
+HYPERPARAMETERS------------
+
+lr = 3e-4                        <---learning rate for our neural nets
+z_dim = 64                           
+image_dim = 28 * 28 * 1             <-----mnist image dimension
+batch_size = 32	             <----- no. of samples processed before the model is    										updated
+num_epochs = 50                 <---- no. of iterations of the training data in 									training the model , one cycle
+
+
+
+
+
+-----------------------------------------------------------------------
+******calling the generator  and discriminator
+
+
+disc = Discriminator(image_dim).to(device)
+gen = Generator(z_dim, image_dim).to(device)
+
+fixed_noise = torch.randn((batch_size, z_dim)).to(device)
+
+
+
