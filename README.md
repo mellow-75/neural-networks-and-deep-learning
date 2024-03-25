@@ -1,2 +1,2 @@
 # neural-networks-and-deep-learning
-projects, models and programs based on deep learning principles 
+this repo contains code snippets that implement topics like PCA , one Hot encoding , neural nets , GANs 
